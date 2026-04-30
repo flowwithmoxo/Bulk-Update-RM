@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Moxo · Bulk Relationship Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233B82F6'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15h-2v-2h2v2zm0-4h-2V7h2v6z'/%3E%3C/svg%3E">
+</head>
+<body>
+    <div class="app">
+        <div class="container">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-left">
+                    <img src="./Assets/logo.png" alt="Moxo Logo" class="logo-image">
+                    <div class="logo-text">
+                        <h1>Bulk Relationship Manager</h1>
+                        <p>Create advisor-client relationships in bulk · Moxo API v1</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="token-badge" id="tokenBadge">
+                        <span class="token-dot" id="tokenDot"></span>
+                        <span id="tokenStatus">No Token</span>
+                    </div>
+                    <button class="btn-icon" id="toggleConfigBtn" onclick="window.toggleConfig?.()">
+                        <i class="fas fa-sliders-h"></i> Settings
+                    </button>
+                </div>
+            </div>
+
+            <!-- Config Panel (hidden by default) -->
+            <div class="config-panel" id="configPanel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-key"></i> API Configuration</h3>
+                    <button class="btn-primary-small" onclick="window.generateToken?.()">
+                        <i class="fas fa-sync-alt"></i> Generate Token
+                    </button>
+                </div>
+                <div class="config-grid">
+                    <div class="input-group">
+                        <label>Moxo Domain</label>
+                        <input type="text" id="domain" placeholder="your-domain.moxo.com" value="karan-demo2.moxo.com">
+                    </div>
+                    <div class="input-group">
+                        <label>Organization ID</label>
+                        <input type="text" id="orgId" placeholder="org_xxxx">
+                    </div>
+                    <div class="input-group">
+                        <label>Client ID</label>
+                        <input type="text" id="clientId" placeholder="client_id">
+                    </div>
+                    <div class="input-group">
+                        <label>Client Secret</label>
+                        <input type="password" id="clientSecret" placeholder="••••••••">
+                    </div>
+                    <div class="input-group">
+                        <label>Identity Type</label>
+                        <select id="identityType">
+                            <option value="email">Email</option>
+                            <option value="unique_id">Unique ID</option>
+                            <option value="phone_number">Phone Number</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label id="identityLabel">Identity Value (Email)</label>
+                        <input type="text" id="identityValue" placeholder="admin@example.com">
+                    </div>
+                </div>
+                <div class="config-note">
+                    <i class="fas fa-database"></i> Settings saved automatically in your browser
+                </div>
+            </div>
+
+            <!-- Main Work Area: two columns -->
+            <div class="work-area">
+                <!-- Clients Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-users"></i> Clients</h3>
+                        <div class="card-actions">
+                            <button class="btn-icon-small" onclick="window.downloadSampleCSV?.('clients')">
+                                <i class="fas fa-download"></i> Sample
+                            </button>
+                            <button class="btn-icon-small" onclick="window.uploadCSV?.('clients')">
+                                <i class="fas fa-upload"></i> Upload CSV
+                            </button>
+                            <input type="file" id="clientsCsv" accept=".csv" style="display:none" onchange="window.handleCSVUpload?.('clients', this)">
+                        </div>
+                    </div>
+                    <textarea id="clientsList" rows="8" placeholder="Enter client emails (one per line)&#10;client1@example.com&#10;client2@example.com&#10;john.doe@company.com"></textarea>
+                    <div class="card-footer">
+                        <span class="count-badge" id="clientCount">0 clients</span>
+                        <button class="btn-text" onclick="window.clearClients?.()">Clear all</button>
+                    </div>
+                </div>
+
+                <!-- Advisors Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chalkboard-user"></i> Advisors </h3>
+                        <div class="card-actions">
+                            <button class="btn-icon-small" onclick="window.downloadSampleCSV?.('advisors')">
+                                <i class="fas fa-download"></i> Sample
+                            </button>
+                            <button class="btn-icon-small" onclick="window.uploadCSV?.('advisors')">
+                                <i class="fas fa-upload"></i> Upload CSV
+                            </button>
+                            <input type="file" id="advisorsCsv" accept=".csv" style="display:none" onchange="window.handleCSVUpload?.('advisors', this)">
+                        </div>
+                    </div>
+                    <textarea id="advisorsList" rows="8" placeholder="Enter advisor emails (one per line)&#10;advisor1@domain.com&#10;advisor2@domain.com"></textarea>
+                    <div class="card-footer">
+                        <span class="count-badge" id="advisorCount">0 advisors</span>
+                        <button class="btn-text" onclick="window.clearAdvisors?.()">Clear all</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Banner -->
+            <!-- <div class="info-note">
+                <i class="fas fa-info-circle"></i>
+                <span>Each client will be mapped to <strong>ALL advisors</strong> in the list. Total relationships = clients × advisors. <strong>workspace/relationship</strong> creation via POST /v1/{orgId}/relationship</span>
+            </div> -->
+
+            <!-- Launch Panel -->
+            <div class="launch-section">
+                <div class="launch-header">
+                    <h3><i class="fas fa-rocket"></i> Launch Bulk Creation</h3>
+                    <div class="launch-controls">
+                        <div class="delay-control">
+                            <label>Delay (ms)</label>
+                            <input type="number" id="delayMs" value="500" step="100" min="100">
+                        </div>
+                        <div class="status-badge" id="statusBadge">Ready</div>
+                    </div>
+                </div>
+
+                <!-- Progress area -->
+                <div class="progress-section" id="progressSection" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-stats">
+                        <span id="progressText">0/0 processed</span>
+                        <span class="success"><i class="fas fa-check-circle"></i> <span id="successCount">0</span></span>
+                        <span class="error"><i class="fas fa-times-circle"></i> <span id="errorCount">0</span></span>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-primary" id="startBtn" onclick="window.startLaunch?.()">
+                        <i class="fas fa-play"></i> Start Bulk Creation
+                    </button>
+                    <button class="btn-danger" id="stopBtn" onclick="window.stopLaunch?.()" style="display: none;">
+                        <i class="fas fa-stop"></i> Stop
+                    </button>
+                    <button class="btn-secondary" onclick="window.clearLogs?.()">
+                        <i class="fas fa-trash"></i> Clear Logs
+                    </button>
+                </div>
+
+                <!-- Logs console -->
+                <div class="log-container" id="logContainer">
+                    <div class="log-entry info">
+                        <i class="fas fa-check-circle"></i> Ready. Configure API and generate token.
+                    </div>
+                    <div class="log-entry info">
+                        <i class="fas fa-info-circle"></i> Each client will be paired with every advisor (cartesian product).
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
